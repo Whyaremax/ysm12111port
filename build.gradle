@@ -1,0 +1,134 @@
+plugins {
+    id "fabric-loom" version "${loom_version}"
+    id "maven-publish"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven {
+        name = "Fabric"
+        url = "https://maven.fabricmc.net/"
+    }
+    maven {
+        name = "GeckoLib"
+        url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+        content {
+            includeGroup "software.bernie.geckolib"
+        }
+    }
+    mavenCentral()
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        yes_steve_model {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+def originalJar = file("../ysm-2.6.4-fabric+mc1.21.1-release.jar")
+def forgeConfigRemappedJars = fileTree("${projectDir}/.gradle").matching {
+    include "**/forge-config-api-port-v21.11.1-mc1.21.11-fabric-*.jar"
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-api-base:1.0.5+4ebb5c083e"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-command-api-v2:2.4.7+6b42a6003e"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-entity-events-v1:3.1.1+1d0ab4303e"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-key-binding-api-v1:1.1.7+4fc5413f3e"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:2.6.15+4ebb5c083e"
+    modCompileOnly "net.fabricmc.fabric-api:fabric-networking-api-v1:5.1.5+ae1e07683e"
+    modCompileOnly "software.bernie.geckolib:geckolib-fabric-${project.minecraft_version}:5.4.5"
+    if (!forgeConfigRemappedJars.isEmpty()) {
+        compileOnly files(forgeConfigRemappedJars)
+    }
+
+    modCompileOnly files(originalJar)
+}
+
+processResources {
+    inputs.property "version", project.version
+    filesMatching(["fabric.mod.json"]) {
+        expand(
+            version: project.version,
+            minecraft_version: project.minecraft_version,
+            loader_version: project.loader_version
+        )
+    }
+    from("${projectDir}/../..") {
+        include "*.py"
+        into "python/ysm"
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(zipTree(originalJar)) {
+        exclude "META-INF/MANIFEST.MF"
+        exclude "META-INF/neoforge.mods.toml"
+        exclude "META-INF/jars/forge-config-api-port-v21.1.3-1.21.1-Fabric.jar"
+        exclude "META-INF/jars/forge-config-api-port-v21.11.1-mc1.21.11-fabric.jar"
+        exclude "META-INF/native/**"
+        exclude "fabric.mod.json"
+        exclude "yes_steve_model.mixins.json"
+        exclude "com/elfmcys/yesstevemodel/OO000oo00oo0O0O0oO0OoOoo.class"
+        exclude "com/elfmcys/yesstevemodel/OO00O0OOoo00O00O00O0oooO.class"
+        exclude 'com/elfmcys/yesstevemodel/OO00O0OOoo00O00O00O0oooO$*.class'
+        exclude "com/elfmcys/yesstevemodel/o000O00OoOoO0o0ooO0O0O0O.class"
+        exclude "com/elfmcys/yesstevemodel/oOOo0OO00O0ooO00OoOo0oO0.class"
+        exclude "com/elfmcys/yesstevemodel/oOO00OO000OoOOOOoO00oO0o.class"
+        exclude "com/elfmcys/yesstevemodel/oooo0oo00o0oooOOOoOOO00O.class"
+        exclude "com/elfmcys/yesstevemodel/YesSteveModel.class"
+        exclude "com/elfmcys/yesstevemodel/O00OoOO0oOOOo00O00o0o0oo.class"
+        exclude "com/elfmcys/yesstevemodel/O00o0OoO0ooO0oO0OO0Oo0Oo.class"
+        exclude "com/elfmcys/yesstevemodel/OOoo0oooo0O0OO0oo00oOOO0.class"
+        exclude 'com/elfmcys/yesstevemodel/OOoo0oooo0O0OO0oo00oOOO0$*.class'
+        exclude "com/elfmcys/yesstevemodel/o0OO0oOoO0oOOOo0O0OoooO0.class"
+        exclude "com/elfmcys/yesstevemodel/o0Oo0OOO00o00OoooO0oO0o0.class"
+        exclude 'com/elfmcys/yesstevemodel/o0Oo0OOO00o00OoooO0oO0o0$*.class'
+        exclude "com/elfmcys/yesstevemodel/o0ooo0O0OOO0000OOooo000o.class"
+        exclude 'com/elfmcys/yesstevemodel/O00OoOO0oOOOo00O00o0o0oo$*.class'
+        exclude "com/elfmcys/yesstevemodel/mixin/**"
+    }
+
+    manifest {
+        attributes(
+            "Implementation-Title": "YesSteveModel",
+            "Implementation-Version": project.version,
+            "Fabric-Minecraft-Version": project.minecraft_version,
+            "Fabric-Loader-Version": project.loader_version,
+            "Fabric-Mapping-Namespace": "named"
+        )
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}

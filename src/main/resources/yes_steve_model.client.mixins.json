@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.elfmcys.yesstevemodel.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "client-yes-steve-model-refmap.json",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "client.ClientPlayerEntityMixin",
+    "client.GuiMixin",
+    "client.ItemInHandRendererMixin",
+    "client.LivingRendererMixin",
+    "client.PlayerRendererMixin",
+    "client.WorldRendererMixin"
+  ]
+}

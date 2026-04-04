@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "yes_steve_model",
+  "version": "${version}",
+  "icon": "yesstevemodel.png",
+  "name": "Yes Steve Model",
+  "description": "A patched 1.21.11 port of YSM 2.6.4.",
+  "authors": [
+    "YS Group",
+    "TartaricAcid",
+    "TomatoPuddin",
+    "AryochiL"
+  ],
+  "contributors": [
+    "bernie-g (GeckoLib)",
+    "fadookie (mclib)",
+    "TT432 & SQwatermark",
+    "OpenAI Codex port scaffold"
+  ],
+  "contact": {
+    "issues": "https://github.com/YesSteveModel/YSM-Wiki-Issues/issues",
+    "homepage": "https://ysm.cfpa.team/"
+  },
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.elfmcys.yesstevemodel.YesSteveModel"
+    ],
+    "client": [
+      "com.elfmcys.yesstevemodel.YesSteveModel"
+    ]
+  },
+  "mixins": [
+    "yes_steve_model.mixins.json",
+    "yes_steve_model.client.mixins.json"
+  ],
+  "depends": {
+    "java": ">=21",
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "geckolib": ">=5.4.5",
+    "minecraft": "${minecraft_version}"
+  },
+  "breaks": {
+    "iris": "<1.8.0"
+  },
+  "custom": {
+    "loom:injected_interfaces": {}
+  }
+}
