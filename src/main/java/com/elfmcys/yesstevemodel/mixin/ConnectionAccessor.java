@@ -9,4 +9,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ConnectionAccessor {
     @Accessor("channel")
     Channel channel();
+
+    @Deprecated
+    default Channel OoO0O0oO00O0o0OOOOoOOooo() {
+        return channel();
+    }
 }
