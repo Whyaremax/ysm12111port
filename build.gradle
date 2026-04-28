@@ -40,6 +40,21 @@ def originalJar = file("../ysm-2.6.4-fabric+mc1.21.1-release.jar")
 def forgeConfigRemappedJars = fileTree("${projectDir}/.gradle").matching {
     include "**/forge-config-api-port-v21.11.1-mc1.21.11-fabric-*.jar"
 }
+def blockedNativeArtifactPatterns = [
+    "META-INF/native/**",
+    "**/*.dll",
+    "**/*.so",
+    "**/*.dylib",
+    "**/*.jnilib",
+    "**/*JNI*.class",
+    "**/*Jni*.class",
+    "**/*jni*.class",
+    "**/*Native*.class",
+    "**/*native*.class",
+    "**/libysm-core*",
+    "**/ysm-core*"
+]
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
@@ -87,11 +102,11 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from(zipTree(originalJar)) {
+        exclude blockedNativeArtifactPatterns
         exclude "META-INF/MANIFEST.MF"
         exclude "META-INF/neoforge.mods.toml"
         exclude "META-INF/jars/forge-config-api-port-v21.1.3-1.21.1-Fabric.jar"
         exclude "META-INF/jars/forge-config-api-port-v21.11.1-mc1.21.11-fabric.jar"
-        exclude "META-INF/native/**"
         exclude "fabric.mod.json"
         exclude "yes_steve_model.mixins.json"
         exclude "com/elfmcys/yesstevemodel/OO000oo00oo0O0O0oO0OoOoo.class"
@@ -123,6 +138,23 @@ jar {
             "Fabric-Mapping-Namespace": "named"
         )
     }
+}
+
+tasks.register("verifyNoNativeArtifacts") {
+    dependsOn tasks.jar
+    doLast {
+        File outputJar = tasks.jar.archiveFile.get().asFile
+        Set<File> blockedFiles = zipTree(outputJar).matching {
+            include blockedNativeArtifactPatterns
+        }.files
+        if (!blockedFiles.isEmpty()) {
+            throw new GradleException("Packaged jar contains blocked runtime artifacts: " + blockedFiles.collect { it.path }.join(", "))
+        }
+    }
+}
+
+tasks.named("build") {
+    dependsOn tasks.named("verifyNoNativeArtifacts")
 }
 
 publishing {
