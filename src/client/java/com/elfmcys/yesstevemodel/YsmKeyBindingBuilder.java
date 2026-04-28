@@ -127,7 +127,12 @@ public class YsmKeyBindingBuilder {
 
         @Override
         public void setPressed(boolean pressed) {
+            boolean wasPressed = this.isPressed();
             super.setPressed(pressed);
+            if (wasPressed == pressed) {
+                return;
+            }
+
             try {
                 this.keyHandler.handle(this, pressed);
             } catch (Throwable throwable) {
@@ -136,7 +141,7 @@ public class YsmKeyBindingBuilder {
                     this.getId(),
                     throwable
                 );
-                this.setPressed(false);
+                super.setPressed(false);
             }
         }
     }

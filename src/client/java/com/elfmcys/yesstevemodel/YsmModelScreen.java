@@ -108,7 +108,7 @@ public final class YsmModelScreen extends Screen {
 
     private void reloadPacks() {
         this.packs = YsmClientRuntime.packs();
-        YesSteveModel.oOoOoO0OoOOoo00ooO0oO00o.info("YSM screen reload: {} pack(s) visible", this.packs.size());
+        YesSteveModel.LOGGER.info("YSM screen reload: {} pack(s) visible", this.packs.size());
 
         if (!this.packs.isEmpty()) {
             if (this.selectedPackId == null || this.selectedPackId.isBlank()) {
@@ -125,6 +125,7 @@ public final class YsmModelScreen extends Screen {
         if (this.selectedTextureId == null || this.selectedTextureId.isBlank()) {
             this.selectedTextureId = YsmClientRuntime.selectedTextureId();
         }
+        this.selectedTextureId = normalizeTextureSelection(currentPack(), this.selectedTextureId);
         alignPageToSelection();
     }
 
@@ -136,7 +137,6 @@ public final class YsmModelScreen extends Screen {
         int topY = 18;
         int listWidth = Math.min(220, this.width / 2 - 24);
         int rightX = leftX + listWidth + 14;
-        int rightWidth = this.width - rightX - 18;
 
         this.searchField = this.addDrawableChild(
             new TextFieldWidget(this.textRenderer, leftX, topY + 20, listWidth - 4, 18, Text.translatable("gui.yes_steve_model.search"))
@@ -183,7 +183,7 @@ public final class YsmModelScreen extends Screen {
             int currentIndex = index;
             this.addDrawableChild(ButtonWidget.builder(buttonText, button -> {
                 this.selectedPackId = descriptor.id();
-                this.selectedTextureId = descriptor.defaultTextureId();
+                this.selectedTextureId = normalizeTextureSelection(descriptor, descriptor.defaultTextureId());
                 this.currentPage = currentIndex / PAGE_SIZE;
                 this.rebuildWidgets();
             }).dimensions(leftX, listY, listWidth - 4, 20).build());
@@ -202,7 +202,7 @@ public final class YsmModelScreen extends Screen {
         YsmPackDescriptor current = currentPack();
         int actionsY = this.height - 62;
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Apply"), button -> {
-            YesSteveModel.oOoOoO0OoOOoo00ooO0oO00o.info(
+            YesSteveModel.LOGGER.info(
                 "YSM UI: clicked Apply pack={} legacy={} texture={} root={}",
                 current.id(),
                 current.legacyModelId(),
@@ -215,6 +215,8 @@ public final class YsmModelScreen extends Screen {
         }).dimensions(rightX, actionsY, 72, 20).build());
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Reset"), button -> {
             YsmClientRuntime.resetToDefault();
+            this.selectedPackId = YsmClientRuntime.selectedPackId();
+            this.selectedTextureId = YsmClientRuntime.selectedTextureId();
             this.reloadPacks();
             this.rebuildWidgets();
         }).dimensions(rightX + 78, actionsY, 72, 20).build());
@@ -233,8 +235,11 @@ public final class YsmModelScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Open Imports"), button -> YsmClientRuntime.openImportFolder())
             .dimensions(rightX, actionsY, 110, 20)
             .build());
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Textures..."), button -> this.openTextureSelection(current))
+            .dimensions(rightX + 116, actionsY, 88, 20)
+            .build());
         this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.yes_steve_model.close"), button -> this.close())
-            .dimensions(rightX + 116, actionsY, 80, 20)
+            .dimensions(rightX + 210, actionsY, 80, 20)
             .build());
 
         List<String> textures = current.textureIds();
@@ -242,11 +247,11 @@ public final class YsmModelScreen extends Screen {
             this.addDrawableChild(ButtonWidget.builder(Text.literal("Tex <"), button -> {
                 this.stepTexture(-1);
                 this.rebuildWidgets();
-            }).dimensions(rightX + 202, actionsY, 60, 20).build());
+            }).dimensions(rightX + 296, actionsY, 60, 20).build());
             this.addDrawableChild(ButtonWidget.builder(Text.literal("Tex >"), button -> {
                 this.stepTexture(1);
                 this.rebuildWidgets();
-            }).dimensions(rightX + 268, actionsY, 60, 20).build());
+            }).dimensions(rightX + 362, actionsY, 60, 20).build());
         }
     }
 
@@ -297,19 +302,45 @@ public final class YsmModelScreen extends Screen {
     }
 
     private void stepTexture(int delta) {
-        List<String> textureIds = currentPack().textureIds();
+        YsmPackDescriptor descriptor = currentPack();
+        List<String> textureIds = descriptor.textureIds();
         if (textureIds.isEmpty()) {
-            this.selectedTextureId = currentPack().defaultTextureId();
+            this.selectedTextureId = descriptor.defaultTextureId();
             return;
         }
         int current = textureIds.indexOf(this.selectedTextureId);
         if (current < 0) {
-            current = textureIds.indexOf(currentPack().defaultTextureId());
+            current = textureIds.indexOf(descriptor.defaultTextureId());
         }
         if (current < 0) {
             current = 0;
         }
         this.selectedTextureId = textureIds.get(Math.floorMod(current + delta, textureIds.size()));
+    }
+
+    private void openTextureSelection(YsmPackDescriptor descriptor) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null) {
+            return;
+        }
+
+        client.setScreen(new YsmTextureSelectionScreen(
+            this,
+            descriptor,
+            this.selectedTextureId,
+            textureId -> this.selectedTextureId = normalizeTextureSelection(descriptor, textureId)
+        ));
+    }
+
+    private static String normalizeTextureSelection(YsmPackDescriptor descriptor, String textureId) {
+        List<String> textureIds = descriptor.textureIds();
+        if (textureId != null && textureIds.contains(textureId)) {
+            return textureId;
+        }
+        if (textureIds.contains(descriptor.defaultTextureId())) {
+            return descriptor.defaultTextureId();
+        }
+        return textureIds.isEmpty() ? "default" : textureIds.getFirst();
     }
 
     private static YsmPackDescriptor fallbackDescriptor() {
