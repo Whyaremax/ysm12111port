@@ -9,4 +9,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ServerGameConnectionAccessor {
     @Accessor("connection")
     ClientConnection connection();
+
+    @Deprecated
+    default ClientConnection OoO0O0oO00O0o0OOOOoOOooo() {
+        return connection();
+    }
 }
