@@ -13,6 +13,9 @@ import net.minecraft.util.Identifier;
 public final class YsmNetworkBridge {
     public static final String PROTOCOL_VERSION = "2.6.0";
     public static final Identifier CHANNEL_ID = Identifier.of(YesSteveModel.MOD_ID, "2_6_0");
+    public static final YsmPayloadChannel PAYLOAD_CHANNEL = new YsmPayloadChannel(CHANNEL_ID);
+
+    @Deprecated
     public static final OO00O0OOoo00O00O00O0oooO LEGACY_PAYLOAD_CHANNEL =
         new OO00O0OOoo00O00O00O0oooO(CHANNEL_ID);
 
@@ -54,12 +57,12 @@ public final class YsmNetworkBridge {
         }
 
         PayloadTypeRegistry.playC2S().register(
-            LEGACY_PAYLOAD_CHANNEL.OoO0O0oO00O0o0OOOOoOOooo(),
-            LEGACY_PAYLOAD_CHANNEL
+            PAYLOAD_CHANNEL.payloadId(),
+            PAYLOAD_CHANNEL
         );
         PayloadTypeRegistry.playS2C().register(
-            LEGACY_PAYLOAD_CHANNEL.OoO0O0oO00O0o0OOOOoOOooo(),
-            LEGACY_PAYLOAD_CHANNEL
+            PAYLOAD_CHANNEL.payloadId(),
+            PAYLOAD_CHANNEL
         );
         payloadTypesRegistered = true;
     }
