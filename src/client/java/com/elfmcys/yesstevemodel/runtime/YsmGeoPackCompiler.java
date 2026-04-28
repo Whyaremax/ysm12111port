@@ -13,6 +13,8 @@ import net.minecraft.util.Identifier;
 import com.elfmcys.yesstevemodel.YesSteveModel;
 
 public final class YsmGeoPackCompiler {
+    private static long compileRevision;
+
     public YsmGeoPack compile(YsmCompiledPack compiledPack) throws IOException {
         YsmPackDescriptor descriptor = compiledPack.descriptor();
         YsmSourcePack sourcePack = compiledPack.sourcePack();
@@ -26,11 +28,12 @@ public final class YsmGeoPackCompiler {
         String basePath = descriptor.sourceType() == YsmPackDescriptor.SourceType.BUILTIN
             ? "builtin/" + sanitizeResourcePath(descriptor.legacyModelId())
             : "imported/" + sanitizeResourcePath(descriptor.id());
-        Identifier modelResource = Identifier.of(YesSteveModel.OoO0O0oO00O0o0OOOOoOOooo, basePath + "/main");
-        Identifier animationResource = Identifier.of(YesSteveModel.OoO0O0oO00O0o0OOOOoOOooo, basePath + "/main");
+        String versionedBasePath = basePath + "/r" + nextCompileRevision();
+        Identifier modelResource = Identifier.of(YesSteveModel.MOD_ID, versionedBasePath + "/main");
+        Identifier animationResource = Identifier.of(YesSteveModel.MOD_ID, versionedBasePath + "/main");
         Identifier textureResource = Identifier.of(
-            YesSteveModel.OoO0O0oO00O0o0OOOOoOOooo,
-            basePath + "/textures/" + sanitizeResourcePath(sourcePack.selectedTextureId())
+            YesSteveModel.MOD_ID,
+            versionedBasePath + "/textures/" + sanitizeResourcePath(sourcePack.selectedTextureId())
         );
         YsmGeoResourceBridge.registerPack(
             modelResource,
@@ -47,6 +50,10 @@ public final class YsmGeoPackCompiler {
         YsmScaleProfile scaleProfile = computeScaleProfile(sourcePack.mainModel());
 
         return new YsmGeoPack(compiledPack, modelResource, textureResource, animationResource, animationNames, scaleProfile);
+    }
+
+    private static synchronized long nextCompileRevision() {
+        return ++compileRevision;
     }
 
     private static Set<String> readAnimationNames(JsonObject animationRoot) {
@@ -144,5 +151,4 @@ public final class YsmGeoPackCompiler {
             return YsmScaleProfile.DEFAULT;
         }
     }
-
 }
