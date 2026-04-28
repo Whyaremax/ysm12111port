@@ -1,7 +1,5 @@
 package com.elfmcys.yesstevemodel;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 
@@ -11,8 +9,6 @@ public class YsmKeyBindingBuilder {
     public static final int FLAG_OPTION_FOUR = 4;
     public static final int FLAG_OPTION_EIGHT = 8;
     public static final String DEFAULT_CATEGORY_KEY = "key.category.yes_steve_model";
-
-    static final List<oOOoo0O00oOOOOO0OO0o00OO> CUSTOM_FACTORIES = new ArrayList<>();
 
     private final String translationKey;
     private String categoryKey = DEFAULT_CATEGORY_KEY;
@@ -103,13 +99,6 @@ public class YsmKeyBindingBuilder {
     }
 
     public KeyBinding build() {
-        for (oOOoo0O00oOOOOO0OO0o00OO factory : CUSTOM_FACTORIES) {
-            KeyBinding binding = factory.build(this);
-            if (binding != null) {
-                return binding;
-            }
-        }
-
         return new HandlingKeyBinding(
             this.translationKey,
             this.inputType,
