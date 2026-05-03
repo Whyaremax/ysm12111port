@@ -16,8 +16,7 @@ Current state:
 - Bundled models are scanned from `assets/yes_steve_model/builtin/**`.
 - Pack validation parses `ysm.json` directly for `files.player.model`, `files.player.animation`, and `files.player.texture`.
 - The screen keeps the last good selection if a pack is missing required player assets.
-- External `.ysm` import uses the bundled Python extractor and currently accepts formats `9`, `15`, and `31`.
-- Format `1` and other unknown formats fail soft during import with a clear error.
+- `.ysm` File are supported, only format `31`, extractors will be directly used from [dedicated extractor](https://github.com/Whyaremax/ILoveOpenYSM)
 - Legacy HUD overlays are disabled until a new preview/render path exists.
 - Initial local-player render bridge is enabled for body, arms, and first-person hands using `1.21.11` buffers.
 - GeckoLib model, animation, and texture resources are versioned per compile to reduce stale cache animation glitches.
@@ -33,7 +32,3 @@ Build:
 cd modern_port/port1211
 GRADLE_USER_HOME=.gradle ./gradlew build
 ```
-
-Output jar:
-- `build/libs/yes-steve-model-2.6.4-fabric+mc1.21.11-port9.jar`
-- `build/libs/yes-steve-model-2.6.4-fabric+mc1.21.11-port11.jar`
