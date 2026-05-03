@@ -103,6 +103,13 @@ GRADLE_USER_HOME=.gradle ./gradlew build
 
 - https://github.com/Whyaremax/ILoveOpenYSM
 
+## License
+
+This repository uses a custom source-available notice. See [LICENSE](LICENSE).
+
+> [!CAUTION]
+> This repository is publicly viewable for compatibility research, interoperability work, personal porting, review, and educational inspection. It is not MIT-licensed, and no permission is granted to sell, repackage, sublicense, or commercially distribute this repository or builds derived from it.
+
 ## Disclaimer
 
 This repository is provided for compatibility, interoperability, research, and personal porting work. It is provided "as is", without warranty of any kind.
