@@ -1,21 +1,30 @@
-MIT License
+CUSTOM SOURCE-AVAILABLE NOTICE
 
-Copyright (c) 2026 ILoveOpenYSM contributors
+Copyright (c) 2026 Whyaremax and repository contributors.
+All rights reserved except as expressly stated below.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This repository is made publicly viewable for compatibility research, interoperability work, personal porting, review, and educational inspection.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Permission granted:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. You may view, clone, and study this repository for personal, non-commercial research and interoperability purposes.
+2. You may make private local modifications for personal testing.
+3. You may reference this repository for discussion, issue reports, or compatibility research, provided proper credit is given.
+
+Permission not granted:
+
+1. You may not sell, sublicense, repackage, or commercially distribute this repository or builds derived from it.
+2. You may not claim this repository, its porting work, or its replacement code as your own original project.
+3. You may not redistribute compiled builds of this repository without explicit written permission from the repository owner.
+4. You may not use this repository to imply affiliation with, endorsement by, or maintenance by the official Yes Steve Model project, the YSM/CIT Resewn team site, or the Modrinth Yes Steve Model page.
+5. This notice does not grant rights to any original Yes Steve Model code, assets, native libraries, model files, textures, animations, trademarks, names, or other third-party materials.
+
+Native and derived-code boundary:
+
+This repository intentionally does not include the original native runtime artifacts. Original native artifacts such as `.dll`, `.so`, `.dylib`, `.jnilib`, `ysm-core*`, `libysm-core*`, `META-INF/native/**`, and native/JNI-looking bridge classes are not licensed by this notice.
+
+Repository-owned replacement code may be relicensed in the future after source ownership and derived-code boundaries are fully cleaned up.
+
+No warranty:
+
+This repository is provided "as is", without warranty of any kind. The authors and contributors are not liable for damages, data loss, account issues, copyright disputes, compatibility problems, or any other liability arising from use of this repository.
