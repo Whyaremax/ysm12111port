@@ -54,6 +54,10 @@ def blockedNativeArtifactPatterns = [
     "**/libysm-core*",
     "**/ysm-core*"
 ]
+def blockedExportArtifactPatterns = [
+    "com/elfmcys/yesstevemodel/**/*Export*.class",
+    "com/elfmcys/yesstevemodel/**/*export*.class"
+]
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -103,6 +107,7 @@ jar {
 
     from(zipTree(originalJar)) {
         exclude blockedNativeArtifactPatterns
+        exclude blockedExportArtifactPatterns
         exclude "META-INF/MANIFEST.MF"
         exclude "META-INF/neoforge.mods.toml"
         exclude "META-INF/jars/forge-config-api-port-v21.1.3-1.21.1-Fabric.jar"
@@ -153,8 +158,22 @@ tasks.register("verifyNoNativeArtifacts") {
     }
 }
 
+tasks.register("verifyNoExportArtifacts") {
+    dependsOn tasks.jar
+    doLast {
+        File outputJar = tasks.jar.archiveFile.get().asFile
+        Set<File> blockedFiles = zipTree(outputJar).matching {
+            include blockedExportArtifactPatterns
+        }.files
+        if (!blockedFiles.isEmpty()) {
+            throw new GradleException("Packaged jar contains blocked export artifacts: " + blockedFiles.collect { it.path }.join(", "))
+        }
+    }
+}
+
 tasks.named("build") {
     dependsOn tasks.named("verifyNoNativeArtifacts")
+    dependsOn tasks.named("verifyNoExportArtifacts")
 }
 
 publishing {

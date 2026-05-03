@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -70,8 +70,8 @@ public final class YsmPythonImporter {
         Files.createDirectories(cacheRoot);
         Path scriptRoot = materializeScripts();
         ProcessResult result = runExtractor(scriptRoot, sourceFile);
-        Path exported = resolveExportedFolder(sourceFile.getParent(), result.outputLines);
-        if (exported == null || !Files.exists(exported)) {
+        Path dumpFolder = resolveDumpFolder(sourceFile.getParent(), result.outputLines);
+        if (dumpFolder == null || !Files.exists(dumpFolder)) {
             throw new IOException("Extractor did not produce a dump folder.\n" + String.join("\n", result.outputLines));
         }
 
@@ -79,7 +79,7 @@ public final class YsmPythonImporter {
         Path target = cacheRoot.resolve("imported_" + baseName);
         deleteRecursively(target);
         Files.createDirectories(target.getParent());
-        Files.move(exported, target, StandardCopyOption.REPLACE_EXISTING);
+        Files.move(dumpFolder, target, StandardCopyOption.REPLACE_EXISTING);
 
         ImportedMetadata importedMetadata = inspectImportedFolder(baseName, target, sourceFile);
         YsmPackDescriptor descriptor = new YsmPackDescriptor(
@@ -358,7 +358,7 @@ public final class YsmPythonImporter {
     }
 
     private static Path materializeScripts() throws IOException {
-        Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(YesSteveModel.OoO0O0oO00O0o0OOOOoOOooo);
+        Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(YesSteveModel.MOD_ID);
         if (modContainer.isEmpty()) {
             throw new IOException("Missing YSM mod container");
         }
@@ -390,7 +390,7 @@ public final class YsmPythonImporter {
         return tempRoot;
     }
 
-    private static Path resolveExportedFolder(Path baseDir, List<String> lines) {
+    private static Path resolveDumpFolder(Path baseDir, List<String> lines) {
         for (int i = lines.size() - 1; i >= 0; i--) {
             String line = lines.get(i).trim();
             if (!line.startsWith("dump_folder:")) {
