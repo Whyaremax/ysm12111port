@@ -1,4 +1,4 @@
-# YSM 2.6.4 -> Fabric 1.21.11 port workspace
+# YSM 2.6.4 1.21.1 Fabric -> Fabric 1.21.11 port workspace
 
 This workspace repackages selected Java-side content from the original `1.21.1` jar, overlays `1.21.11` metadata, and replaces the runtime-critical client/common classes with source-owned code.
 
