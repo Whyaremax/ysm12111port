@@ -9,10 +9,8 @@
   },
   "client": [
     "client.ClientPlayerEntityMixin",
-    "client.GuiMixin",
     "client.ItemInHandRendererMixin",
     "client.LivingRendererMixin",
-    "client.PlayerRendererMixin",
-    "client.WorldRendererMixin"
+    "client.PlayerRendererMixin"
   ]
 }
