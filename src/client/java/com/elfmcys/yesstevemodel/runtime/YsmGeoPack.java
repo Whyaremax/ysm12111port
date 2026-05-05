@@ -9,10 +9,12 @@ public record YsmGeoPack(
     Identifier textureResource,
     Identifier animationResource,
     Set<String> animationNames,
-    YsmScaleProfile scaleProfile
+    YsmScaleProfile scaleProfile,
+    Set<String> firstPersonHiddenBones
 ) {
     public YsmGeoPack {
         animationNames = Set.copyOf(animationNames);
+        firstPersonHiddenBones = Set.copyOf(firstPersonHiddenBones);
     }
 
     public boolean hasAnimation(String animationName) {

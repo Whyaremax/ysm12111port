@@ -3,39 +3,47 @@ package com.elfmcys.yesstevemodel.runtime;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.threedmodelnow.core.DataRootService;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import net.fabricmc.loader.api.FabricLoader;
 
 public final class YsmClientConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private final Path path;
+    private final Path legacyPath;
     private Data data;
 
     public YsmClientConfig() {
-        Path dir = FabricLoader.getInstance().getConfigDir().resolve("yes_steve_model");
+        Path dir = DataRootService.ysmCompatRoot();
         this.path = dir.resolve("client-runtime.json");
+        this.legacyPath = DataRootService.legacyYsmRoot().resolve("client-runtime.json");
         this.data = new Data();
     }
 
     public synchronized void load() throws IOException {
         Files.createDirectories(this.path.getParent());
         if (!Files.exists(this.path)) {
+            if (Files.exists(this.legacyPath)) {
+                this.data = readData(this.legacyPath);
+            }
             save();
             return;
         }
 
-        try (Reader reader = Files.newBufferedReader(this.path)) {
+        this.data = readData(this.path);
+    }
+
+    private static Data readData(Path source) throws IOException {
+        try (Reader reader = Files.newBufferedReader(source)) {
             Data loaded = GSON.fromJson(reader, Data.class);
-            this.data = loaded == null ? new Data() : loaded.normalized();
+            return loaded == null ? new Data() : loaded.normalized();
         } catch (JsonSyntaxException exception) {
-            this.data = new Data();
-            save();
+            return new Data();
         }
     }
 
@@ -72,6 +80,10 @@ public final class YsmClientConfig {
 
     public Path getCacheRoot() {
         return this.path.getParent().resolve("imported");
+    }
+
+    public Path getLegacyCacheRoot() {
+        return this.legacyPath.getParent().resolve("imported");
     }
 
     public Path getImportsRoot() {

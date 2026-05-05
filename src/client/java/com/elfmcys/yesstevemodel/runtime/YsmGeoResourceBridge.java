@@ -45,6 +45,15 @@ public final class YsmGeoResourceBridge {
         installTexture(textureId, texturePath);
     }
 
+    public static synchronized java.util.Optional<BakedGeoModel> getInstalledModel(Identifier modelId) throws IOException {
+        try {
+            BakedModelCache currentCache = (BakedModelCache) MODELS_FIELD.get(null);
+            return java.util.Optional.ofNullable(currentCache.cache().get(modelId));
+        } catch (ReflectiveOperationException exception) {
+            throw new IOException("Failed to inspect GeckoLib model cache", exception);
+        }
+    }
+
     private static void installModel(Identifier modelId, JsonObject modelJson) throws IOException {
         try {
             BakedModelCache currentCache = (BakedModelCache) MODELS_FIELD.get(null);
@@ -163,6 +172,7 @@ public final class YsmGeoResourceBridge {
         sanitized = sanitized.replaceAll("[A-Za-z0-9_:.]+\\s*!=\\s*'[^']*'", "1");
         sanitized = sanitized.replaceAll("[A-Za-z0-9_:.]+\\s*==\\s*'[^']*'", "0");
         sanitized = stripSecondOrderCalls(sanitized);
+        sanitized = stripBoneRotCalls(sanitized);
         sanitized = stripNullCoalescing(sanitized);
 
         if (containsUnsupportedAssignment(sanitized) || sanitized.contains(";")) {
@@ -227,6 +237,14 @@ public final class YsmGeoResourceBridge {
             sanitized = sanitized.substring(0, start) + replacement + sanitized.substring(close + 1);
             start = sanitized.indexOf(function);
         }
+        return sanitized;
+    }
+
+    private static String stripBoneRotCalls(String expression) {
+        String sanitized = expression;
+        sanitized = sanitized.replaceAll("ysm\\.bone_rot\\([^)]*\\)\\.[xyz]", "0");
+        sanitized = sanitized.replaceAll("ysm\\.bone_rot\\([^)]*\\)", "0");
+
         return sanitized;
     }
 

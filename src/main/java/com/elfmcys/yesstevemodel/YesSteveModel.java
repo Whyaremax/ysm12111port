@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 public class YesSteveModel implements ClientModInitializer, ModInitializer {
     public static final String MOD_ID = "yes_steve_model";
+    public static final String YSM_COMPAT_NAMESPACE = MOD_ID;
     public static String RUNTIME_KIND = "java-runtime";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 

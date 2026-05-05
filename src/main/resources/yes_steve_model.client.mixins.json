@@ -10,6 +10,7 @@
   "client": [
     "client.ClientPlayerEntityMixin",
     "client.GuiMixin",
+    "client.InventoryScreenMixin",
     "client.ItemInHandRendererMixin",
     "client.LivingRendererMixin",
     "client.PlayerRendererMixin",

@@ -4,6 +4,7 @@ import com.elfmcys.yesstevemodel.YesSteveModel;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import net.minecraft.client.MinecraftClient;
 
 public final class YsmFirstPersonCompat {
     private static boolean initialized;
@@ -54,6 +55,27 @@ public final class YsmFirstPersonCompat {
         } catch (Throwable throwable) {
             return false;
         }
+    }
+
+    public static boolean isEnabled() {
+        initialize();
+        if (apiClass == null) {
+            return false;
+        }
+        try {
+            return Boolean.TRUE.equals(isEnabledMethod.invoke(null));
+        } catch (Throwable throwable) {
+            return false;
+        }
+    }
+
+    public static boolean shouldUseFirstPersonModel() {
+        if (!isEnabled()) {
+            return false;
+        }
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        return client != null && client.options != null && client.options.getPerspective().isFirstPerson();
     }
 
     private static final class OffsetHandlerInvocation implements InvocationHandler {

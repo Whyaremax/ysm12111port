@@ -7,10 +7,12 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
+import software.bernie.geckolib.animation.state.BoneSnapshot;
 import software.bernie.geckolib.loading.math.MathParser;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoObjectRenderer;
+import software.bernie.geckolib.renderer.base.BoneSnapshots;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 import software.bernie.geckolib.renderer.base.RenderPassInfo;
 
@@ -19,7 +21,7 @@ public final class YsmGeoPlayerRenderer extends GeoObjectRenderer<YsmGeoAnimatab
     public static final DataTicket<YsmPoseSnapshot> POSE_SNAPSHOT = DataTicket.create("ysm_pose_snapshot", YsmPoseSnapshot.class);
     private static final DataTicket<Float> BODY_YAW = DataTicket.create("ysm_body_yaw", Float.class);
     private static final DataTicket<Float> DEATH_TIME = DataTicket.create("ysm_death_time", Float.class);
-
+    private static final String[] HEAD_ROTATION_BONES = {"AllHead", "MHead", "Head"};
     private final YsmGeoPack pack;
 
 
@@ -61,8 +63,8 @@ public final class YsmGeoPlayerRenderer extends GeoObjectRenderer<YsmGeoAnimatab
         renderState.addGeckolibData(DataTickets.IS_CROUCHING, poseSnapshot.sneaking());
         renderState.addGeckolibData(DataTickets.IS_DEAD_OR_DYING, poseSnapshot.death());
 
-        renderState.addGeckolibData(DataTickets.ENTITY_YAW, poseSnapshot.relativeHeadYaw());
-        renderState.addGeckolibData(DataTickets.ENTITY_PITCH, poseSnapshot.headPitch());
+        renderState.addGeckolibData(DataTickets.ENTITY_YAW, relatedObject.player().getHeadYaw());
+        renderState.addGeckolibData(DataTickets.ENTITY_PITCH, relatedObject.player().getPitch());
 
         renderState.addGeckolibData(DataTickets.VELOCITY, relatedObject.player().getVelocity());
         renderState.addGeckolibData(DataTickets.ELYTRA_ROTATION, new Vec3d(0.0, 0.0, poseSnapshot.elytraRoll()));
@@ -74,10 +76,10 @@ public final class YsmGeoPlayerRenderer extends GeoObjectRenderer<YsmGeoAnimatab
     public void setMolangQueryValues(YsmGeoAnimatablePlayer animatable, YsmRenderContext relatedObject, GeoRenderState.Impl renderState, float partialTick) {
         YsmPoseSnapshot pose = relatedObject.poseSnapshot();
 
-        MathParser.setVariable("ysm.head_yaw", controller -> pose.relativeHeadYaw());
+        MathParser.setVariable("ysm.head_yaw", controller -> -pose.relativeHeadYaw());
         MathParser.setVariable("ysm.head_pitch", controller -> pose.headPitch());
 
-        MathParser.setVariable("head_yaw", controller -> pose.relativeHeadYaw());
+        MathParser.setVariable("head_yaw", controller -> -pose.relativeHeadYaw());
         MathParser.setVariable("head_pitch", controller -> pose.headPitch());
         MathParser.setVariable("ysm.body_yaw", controller -> pose.bodyYaw());
 
@@ -114,5 +116,48 @@ public final class YsmGeoPlayerRenderer extends GeoObjectRenderer<YsmGeoAnimatab
             float deathRotation = Math.min(MathHelper.sqrt((deathTime - 1.0F) / 20.0F * 1.6F), 1.0F) * 90.0F;
             renderPassInfo.poseStack().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(deathRotation));
         }
+    }
+
+    @Override
+    public void adjustModelBonesForRender(RenderPassInfo<GeoRenderState.Impl> renderPassInfo, BoneSnapshots snapshots) {
+        YsmPoseSnapshot pose = renderPassInfo.renderState().getOrDefaultGeckolibData(POSE_SNAPSHOT, (YsmPoseSnapshot) null);
+        if (pose == null) {
+            return;
+        }
+
+        applyHeadTracking(snapshots, pose);
+
+        if (YsmFirstPersonCompat.shouldUseFirstPersonModel()) {
+            hideFirstPersonHead(snapshots);
+        }
+    }
+
+    private static void applyHeadTracking(BoneSnapshots snapshots, YsmPoseSnapshot pose) {
+        BoneSnapshot headSnapshot = firstPresent(snapshots, HEAD_ROTATION_BONES);
+        if (headSnapshot == null) {
+            return;
+        }
+
+        float yawRadians = (float) Math.toRadians(MathHelper.clamp(pose.relativeHeadYaw(), -75.0f, 75.0f)) * 0.85f;
+        float pitchRadians = (float) Math.toRadians(MathHelper.clamp(pose.headPitch(), -60.0f, 60.0f)) * 0.85f;
+        headSnapshot.setRotY(headSnapshot.getRotY() - yawRadians);
+        headSnapshot.setRotX(headSnapshot.getRotX() - pitchRadians);
+    }
+
+    private void hideFirstPersonHead(BoneSnapshots snapshots) {
+        for (String boneName : this.pack().firstPersonHiddenBones()) {
+            snapshots.ifPresent(boneName, snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
+        }
+    }
+
+    private static BoneSnapshot firstPresent(BoneSnapshots snapshots, String[] candidates) {
+        for (String candidate : candidates) {
+            var snapshot = snapshots.get(candidate);
+            if (snapshot.isPresent()) {
+                return snapshot.get();
+            }
+        }
+
+        return null;
     }
 }

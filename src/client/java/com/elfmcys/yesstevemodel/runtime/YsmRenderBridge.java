@@ -7,6 +7,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
@@ -22,6 +23,7 @@ import net.minecraft.entity.vehicle.BoatEntity;
 
 public final class YsmRenderBridge {
     private static boolean compatibilityInitialized;
+    private static final ThreadLocal<Boolean> INVENTORY_PREVIEW_RENDERING = ThreadLocal.withInitial(() -> false);
 
     private YsmRenderBridge() {
     }
@@ -80,12 +82,27 @@ public final class YsmRenderBridge {
         return true;
     }
 
+    public static void beginInventoryPreview(LivingEntity entity) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && entity == client.player && YsmRenderStateStore.hasActivePack()) {
+            INVENTORY_PREVIEW_RENDERING.set(true);
+        }
+    }
+
+    public static void endInventoryPreview() {
+        INVENTORY_PREVIEW_RENDERING.set(false);
+    }
+
+    public static boolean isInventoryPreviewRendering() {
+        return INVENTORY_PREVIEW_RENDERING.get();
+    }
+
     public static boolean renderLocalArm(MatrixStack matrices, Arm arm) {
-        return YsmFirstPersonCompat.isRenderingPlayer() && YsmRenderStateStore.hasActivePack();
+        return YsmFirstPersonCompat.shouldUseFirstPersonModel() && YsmRenderStateStore.hasActivePack();
     }
 
     public static boolean renderFirstPersonHands(AbstractClientPlayerEntity player, float tickProgress, MatrixStack matrices) {
-        return YsmFirstPersonCompat.isRenderingPlayer() && YsmRenderStateStore.hasActivePack();
+        return YsmFirstPersonCompat.shouldUseFirstPersonModel() && YsmRenderStateStore.hasActivePack();
     }
 
     private static YsmPoseSnapshot capturePose(ClientPlayerEntity player, PlayerEntityRenderState state) {
