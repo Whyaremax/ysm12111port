@@ -5,3 +5,4 @@ run/
 port1211/run/
 *.log
 *.tmp
+ysm-2.6.4-fabric+mc1.21.1-release.jar

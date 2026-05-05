@@ -73,6 +73,8 @@ Credits do not imply endorsement, affiliation, or responsibility for this projec
 
 ## Build
 
+The upstream YSM release jar is not tracked in this repository. To rebuild the optional compatibility addon from source, keep a local copy of `ysm-2.6.4-fabric+mc1.21.1-release.jar` in the project root. It is used only as a local compatibility input for classes/assets that are repackaged into the project-owned addon jar; it is not published as a repository artifact.
+
 ```bash
 GRADLE_USER_HOME=/tmp/gradle-modern-port ./gradlew --no-daemon build
 ```
