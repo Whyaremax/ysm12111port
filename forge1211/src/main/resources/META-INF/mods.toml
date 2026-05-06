@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="${forge_loader_range}"
+license="MIT"
+clientSideOnly=true
+
+[[mods]]
+modId="threed_model_now"
+version="${version}"
+displayName="3DModelNow"
+displayURL="https://github.com/Whyaremax/3DModelNow"
+authors="3DModelNow contributors"
+credits="YS Group, TartaricAcid, TomatoPuddin, AryochiL, bernie-g (GeckoLib), fadookie (mclib), TT432 & SQwatermark, OpenYSM/YSMParser"
+description='''Standalone 3D player-model framework for Forge 1.21.11. Format-specific importers and displays are supplied by optional addons.'''
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.threed_model_now]]
+modId="forge"
+mandatory=true
+versionRange="${forge_loader_range}"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.threed_model_now]]
+modId="minecraft"
+mandatory=true
+versionRange="[${minecraft_version},${minecraft_version}]"
+ordering="NONE"
+side="CLIENT"
