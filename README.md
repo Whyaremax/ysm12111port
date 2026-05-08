@@ -5,7 +5,7 @@
 > [!IMPORTANT]
 > This project is not affiliated with, endorsed by, maintained by, or connected to the official Yes Steve Model project, the YSM/CIT Resewn team site, the Modrinth Yes Steve Model page, CFPA, OpenYSM, Figura, Customizable Player Models, GeckoLib, Fabric, Mojang, or Microsoft.
 
-> [!NOTICE]
+> [!NOTE]
 > This project's YSM compability core will be done base of OpenYSM/OpenYSM
 
 Names are used only to identify compatibility targets, upstream inspiration, bundled compatibility data, parser tooling, or libraries.
