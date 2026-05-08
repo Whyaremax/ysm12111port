@@ -13,7 +13,6 @@
     "client.InventoryScreenMixin",
     "client.ItemInHandRendererMixin",
     "client.LivingRendererMixin",
-    "client.PlayerRendererMixin",
-    "client.WorldRendererMixin"
+    "client.PlayerRendererMixin"
   ]
 }
