@@ -117,7 +117,7 @@ public final class YsmClientRuntime {
             Path importsRoot = CONFIG.getCacheRoot();
             java.nio.file.Files.createDirectories(importsRoot);
             Util.getOperatingSystem().open(importsRoot.toFile());
-            STATUS.setStatus("Opened import folder. Drop .ysm files there, then press Reload.");
+            STATUS.setStatus("Opened import folder. Drop .ysm, .zip, or raw model folders there, then press Reload.");
         } catch (IOException exception) {
             STATUS.setStatus("Failed to open import folder: " + exception.getMessage());
             YesSteveModel.oOoOoO0OoOOoo00ooO0oO00o.error("Failed to open YSM import folder", exception);
@@ -166,8 +166,11 @@ public final class YsmClientRuntime {
             if (lastImportDirectory != null && !lastImportDirectory.isBlank()) {
                 dialog.setDirectory(lastImportDirectory);
             }
-            dialog.setFile("*.ysm");
-            dialog.setFilenameFilter((dir, name) -> name.toLowerCase().endsWith(".ysm"));
+            dialog.setFile("*.ysm;*.zip");
+            dialog.setFilenameFilter((dir, name) -> {
+                String lower = name.toLowerCase();
+                return lower.endsWith(".ysm") || lower.endsWith(".zip");
+            });
             dialog.setVisible(true);
             if (dialog.getFile() == null) {
                 return null;
@@ -180,13 +183,13 @@ public final class YsmClientRuntime {
                 Path importsRoot = CONFIG.getCacheRoot();
                 java.nio.file.Files.createDirectories(importsRoot);
                 Util.getOperatingSystem().open(importsRoot.toFile());
-                STATUS.setStatus("Import picker unavailable. Opened imports folder; drop .ysm files there and press Reload.");
+                STATUS.setStatus("Import picker unavailable. Opened imports folder; drop .ysm, .zip, or raw model folders there and press Reload.");
             } catch (Throwable openThrowable) {
                 YesSteveModel.oOoOoO0OoOOoo00ooO0oO00o.debug("Failed to open imports root after picker fallback", openThrowable);
             }
             if (client != null && client.player != null) {
                 client.player.sendMessage(
-                    net.minecraft.text.Text.literal("YSM import picker is unavailable here. The imports folder was opened; drop .ysm files there and press Reload."),
+                    net.minecraft.text.Text.literal("YSM import picker is unavailable here. The imports folder was opened; drop .ysm, .zip, or raw model folders there and press Reload."),
                     false
                 );
             }

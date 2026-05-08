@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.elfmcys.yesstevemodel.YesSteveModel;
+import com.threedmodelnow.core.ThreeDModelNow;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -81,7 +82,10 @@ public final class YsmPackRepository {
     }
 
     private static void scanBuiltins(Map<String, YsmPackDescriptor> scanned) throws IOException {
-        Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(YesSteveModel.OoO0O0oO00O0o0OOOOoOOooo);
+        Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(ThreeDModelNow.YSM_COMPAT_MOD_ID);
+        if (modContainer.isEmpty()) {
+            modContainer = FabricLoader.getInstance().getModContainer(YesSteveModel.OoO0O0oO00O0o0OOOOoOOooo);
+        }
         if (modContainer.isEmpty()) {
             return;
         }
@@ -136,8 +140,17 @@ public final class YsmPackRepository {
     }
 
     private void scanImported(Map<String, YsmPackDescriptor> scanned) throws IOException {
-        Path importedRoot = this.config.getCacheRoot();
-        Files.createDirectories(importedRoot);
+        scanImportedRoot(scanned, this.config.getLegacyCacheRoot(), false);
+        scanImportedRoot(scanned, this.config.getCacheRoot(), true);
+    }
+
+    private void scanImportedRoot(Map<String, YsmPackDescriptor> scanned, Path importedRoot, boolean create) throws IOException {
+        if (create) {
+            Files.createDirectories(importedRoot);
+        }
+        if (!Files.isDirectory(importedRoot)) {
+            return;
+        }
         try (var stream = Files.list(importedRoot)) {
             stream.filter(Files::isDirectory).forEach(path -> {
                 try {

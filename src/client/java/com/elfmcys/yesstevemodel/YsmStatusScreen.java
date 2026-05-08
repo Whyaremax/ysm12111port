@@ -12,18 +12,18 @@ public final class YsmStatusScreen extends Screen {
     private final List<Text> lines = new ArrayList<>();
 
     public YsmStatusScreen() {
-        super(Text.literal("YSM 1.21.11 Port"));
+        super(Text.literal("3DModelNow 1.21.11"));
     }
 
     @Override
     protected void init() {
         this.clearChildren();
         this.lines.clear();
-        this.lines.add(Text.literal("The original YSM UI is not ported yet."));
-        this.lines.add(Text.literal("This build is currently keeping the client stable while the old 1.21.1 runtime is being replaced."));
+        this.lines.add(Text.literal("3DModelNow is replacing the old native-backed YSM client runtime with readable Java code."));
+        this.lines.add(Text.literal("The current lane is focused on Fabric 1.21.11 YSM-compatible loading."));
         this.lines.add(Text.literal("Current status:"));
         this.lines.add(YesSteveModel.oOoOoO0OoOOoo00ooO0oO00o());
-        this.lines.add(Text.literal("Default model application is not working yet because the remaining model/runtime path is still incomplete."));
+        this.lines.add(Text.literal("Some original-client parity paths are still active rewrite work."));
 
         int buttonWidth = 140;
         int buttonY = this.height - 40;

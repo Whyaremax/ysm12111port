@@ -1,8 +1,6 @@
 package com.elfmcys.yesstevemodel.runtime;
 
-import com.elfmcys.yesstevemodel.YsmOpenModelScreenKeyBinding;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 
 public final class YsmClientBootstrap {
     private static boolean runtimeInitialized;
@@ -19,10 +17,7 @@ public final class YsmClientBootstrap {
         YsmBootstrapSupport.initializeClient();
         YsmBootstrapSupport.runInit("client runtime", YsmClientRuntime::initialize);
         YsmBootstrapSupport.runInit("render compat", YsmRenderBridge::initializeCompatibility);
-        YsmBootstrapSupport.runInit(
-            "key bindings",
-            () -> KeyBindingHelper.registerKeyBinding(YsmOpenModelScreenKeyBinding.OPEN_MODEL_SCREEN)
-        );
+        YsmBootstrapSupport.runInit("probe commands", YsmProbeCommand::register);
         YsmBootstrapSupport.runInit("selection reapply", () -> ClientTickEvents.END_CLIENT_TICK.register(YsmClientRuntime::tick));
 
         runtimeInitialized = true;

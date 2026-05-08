@@ -5,15 +5,24 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 import net.minecraft.util.Identifier;
 import com.elfmcys.yesstevemodel.YesSteveModel;
 
 public final class YsmGeoPackCompiler {
     private static long compileRevision;
+    private static final Pattern FIRST_PERSON_HIDDEN_BONE_PATTERN = Pattern.compile(
+        "head|face|hair|hat|eye|brow|eyelid|pupil|mouth|ear|bang",
+        Pattern.CASE_INSENSITIVE
+    );
 
     public YsmGeoPack compile(YsmCompiledPack compiledPack) throws IOException {
         YsmPackDescriptor descriptor = compiledPack.descriptor();
@@ -48,8 +57,9 @@ public final class YsmGeoPackCompiler {
             throw new IOException("Pack contains no named animations");
         }
         YsmScaleProfile scaleProfile = computeScaleProfile(sourcePack.mainModel());
+        Set<String> firstPersonHiddenBones = computeFirstPersonHiddenBones(sourcePack.mainModel());
 
-        return new YsmGeoPack(compiledPack, modelResource, textureResource, animationResource, animationNames, scaleProfile);
+        return new YsmGeoPack(compiledPack, modelResource, textureResource, animationResource, animationNames, scaleProfile, firstPersonHiddenBones);
     }
 
     private static synchronized long nextCompileRevision() {
@@ -151,4 +161,68 @@ public final class YsmGeoPackCompiler {
             return YsmScaleProfile.DEFAULT;
         }
     }
+
+    private static Set<String> computeFirstPersonHiddenBones(JsonObject mainModel) {
+        Set<String> hidden = new LinkedHashSet<>();
+        if (mainModel == null) {
+            return hidden;
+        }
+
+        try {
+            JsonArray geometries = mainModel.getAsJsonArray("minecraft:geometry");
+            if (geometries == null || geometries.isEmpty() || !geometries.get(0).isJsonObject()) {
+                return hidden;
+            }
+
+            JsonObject geometry = geometries.get(0).getAsJsonObject();
+            JsonArray bones = geometry.getAsJsonArray("bones");
+            if (bones == null || bones.isEmpty()) {
+                return hidden;
+            }
+
+            Map<String, List<String>> children = new HashMap<>();
+            Set<String> seeds = new LinkedHashSet<>();
+            for (JsonElement boneElement : bones) {
+                if (!boneElement.isJsonObject()) {
+                    continue;
+                }
+                JsonObject bone = boneElement.getAsJsonObject();
+                String name = getString(bone, "name");
+                if (name == null || name.isBlank()) {
+                    continue;
+                }
+                if (FIRST_PERSON_HIDDEN_BONE_PATTERN.matcher(name).find()) {
+                    seeds.add(name);
+                }
+                String parent = getString(bone, "parent");
+                if (parent != null && !parent.isBlank()) {
+                    children.computeIfAbsent(parent, ignored -> new ArrayList<>()).add(name);
+                }
+            }
+
+            ArrayDeque<String> queue = new ArrayDeque<>(seeds);
+            while (!queue.isEmpty()) {
+                String current = queue.removeFirst();
+                if (!hidden.add(current)) {
+                    continue;
+                }
+                for (String child : children.getOrDefault(current, List.of())) {
+                    queue.addLast(child);
+                }
+            }
+        } catch (Throwable throwable) {
+            return hidden;
+        }
+
+        return hidden;
+    }
+
+    private static String getString(JsonObject root, String key) {
+        if (root == null || !root.has(key) || !root.get(key).isJsonPrimitive()) {
+            return null;
+        }
+        JsonElement element = root.get(key);
+        return element.getAsJsonPrimitive().isString() ? element.getAsString() : null;
+    }
+
 }

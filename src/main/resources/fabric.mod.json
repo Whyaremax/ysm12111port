@@ -1,45 +1,43 @@
 {
   "schemaVersion": 1,
-  "id": "yes_steve_model",
+  "id": "threed_model_now",
   "version": "${version}",
-  "icon": "yesstevemodel.png",
-  "name": "Yes Steve Model",
-  "description": "A patched 1.21.11 port of YSM 2.6.4.",
+  "name": "3DModelNow",
+  "description": "Standalone 3D player-model framework for Fabric 1.21.11. Format-specific importers and displays are supplied by optional addons.",
   "authors": [
+    "3DModelNow contributors"
+  ],
+  "contributors": [
     "YS Group",
     "TartaricAcid",
     "TomatoPuddin",
-    "AryochiL"
-  ],
-  "contributors": [
+    "AryochiL",
     "bernie-g (GeckoLib)",
     "fadookie (mclib)",
     "TT432 & SQwatermark",
-    "OpenAI Codex port scaffold"
+    "OpenYSM/YSMParser",
+    "OpenAI Codex implementation support"
   ],
   "contact": {
-    "issues": "https://github.com/YesSteveModel/YSM-Wiki-Issues/issues",
-    "homepage": "https://ysm.cfpa.team/"
+    "homepage": "https://github.com/Whyaremax"
   },
-  "license": "All-Rights-Reserved",
-  "environment": "*",
+  "license": "MIT",
+  "environment": "client",
   "entrypoints": {
     "main": [
-      "com.elfmcys.yesstevemodel.YesSteveModel"
+      "com.threedmodelnow.fabric1211.ThreeDModelNowMod"
     ],
     "client": [
-      "com.elfmcys.yesstevemodel.YesSteveModel"
+      "com.threedmodelnow.fabric1211.ThreeDModelNowMod"
     ]
   },
   "mixins": [
-    "yes_steve_model.mixins.json",
-    "yes_steve_model.client.mixins.json"
+    "threed_model_now.client.mixins.json"
   ],
   "depends": {
     "java": ">=21",
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "geckolib": ">=5.4.5",
     "minecraft": "${minecraft_version}"
   },
   "breaks": {

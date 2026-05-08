@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "threed_model_now_ysm_compat",
+  "version": "${version}",
+  "name": "3DModelNow YSM Compatibility",
+  "description": "Optional 3DModelNow addon for YSM/OpenYSM pack import, selection, and display compatibility.",
+  "authors": [
+    "3DModelNow contributors"
+  ],
+  "contributors": [
+    "YS Group",
+    "TartaricAcid",
+    "TomatoPuddin",
+    "AryochiL",
+    "OpenYSM/YSMParser",
+    "OpenAI Codex implementation support"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Whyaremax"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.threedmodelnow.compat.ysm.YsmCompatAddon"
+    ]
+  },
+  "mixins": [
+    "yes_steve_model.mixins.json",
+    "yes_steve_model.client.mixins.json"
+  ],
+  "depends": {
+    "java": ">=21",
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "threed_model_now": ">=${version}",
+    "geckolib": ">=5.4.5"
+  },
+  "custom": {
+    "loom:injected_interfaces": {}
+  }
+}

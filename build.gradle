@@ -3,6 +3,8 @@ plugins {
     id "maven-publish"
 }
 
+import net.fabricmc.loom.task.RemapJarTask
+
 version = project.mod_version
 group = project.maven_group
 
@@ -29,17 +31,22 @@ loom {
     splitEnvironmentSourceSets()
 
     mods {
-        yes_steve_model {
+        threed_model_now {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+        threed_model_now_ysm_compat {
             sourceSet sourceSets.main
             sourceSet sourceSets.client
         }
     }
 }
 
-def originalJar = file("../ysm-2.6.4-fabric+mc1.21.1-release.jar")
+def originalJar = file("./ysm-2.6.4-fabric+mc1.21.1-release.jar")
 def forgeConfigRemappedJars = fileTree("${projectDir}/.gradle").matching {
     include "**/forge-config-api-port-v21.11.1-mc1.21.11-fabric-*.jar"
 }
+def bundledForgeConfigJar = file("${projectDir}/.deps/forge-config-api-port-v21.1.3-1.21.1-Fabric.jar")
 def blockedNativeArtifactPatterns = [
     "META-INF/native/**",
     "**/*.dll",
@@ -72,8 +79,9 @@ dependencies {
     modCompileOnly "software.bernie.geckolib:geckolib-fabric-${project.minecraft_version}:5.4.5"
     if (!forgeConfigRemappedJars.isEmpty()) {
         compileOnly files(forgeConfigRemappedJars)
+    } else if (bundledForgeConfigJar.exists()) {
+        compileOnly files(bundledForgeConfigJar)
     }
-
     modCompileOnly files(originalJar)
 }
 
@@ -88,12 +96,32 @@ processResources {
     }
     from("${projectDir}/../..") {
         include "*.py"
+        include "extractors/**"
         into "python/ysm"
     }
+    from("${projectDir}/tools") {
+        into "tools"
+    }
+}
+
+tasks.register("processYsmCompatResources", Copy) {
+    inputs.property "version", project.version
+    from("src/ysmCompat/resources") {
+        expand(
+            version: project.version,
+            minecraft_version: project.minecraft_version,
+            loader_version: project.loader_version
+        )
+    }
+    into layout.buildDirectory.dir("generated/ysmCompatResources")
 }
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
+}
+
+tasks.named("compileClientJava", JavaCompile) {
+    classpath = sourceSets.main.output + classpath
 }
 
 java {
@@ -102,9 +130,48 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
+tasks.named("sourcesJar") {
+    exclude "com/elfmcys/**"
+    exclude "com/threedmodelnow/compat/ysm/**"
+}
+
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude "com/elfmcys/**"
+    exclude "com/threedmodelnow/compat/ysm/**"
+    exclude "python/**"
+    exclude "tools/**"
+    exclude "yes_steve_model*.json"
 
+    manifest {
+        attributes(
+            "Implementation-Title": "3DModelNow",
+            "Implementation-Version": project.version,
+            "Fabric-Minecraft-Version": project.minecraft_version,
+            "Fabric-Loader-Version": project.loader_version,
+            "Fabric-Mapping-Namespace": "named"
+        )
+    }
+}
+
+tasks.register("ysmCompatJar", Jar) {
+    dependsOn classes, processYsmCompatResources
+    archiveBaseName = "3dmodelnow-ysm-compat"
+    archiveClassifier = "dev"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.output) {
+        include "com/elfmcys/**"
+        include "com/threedmodelnow/compat/ysm/**"
+        include "python/**"
+        include "tools/**"
+        include "yes_steve_model.mixins.json"
+    }
+    from(sourceSets.client.output) {
+        include "com/elfmcys/**"
+        include "com/threedmodelnow/compat/ysm/**"
+    }
+    from(tasks.named("processYsmCompatResources"))
     from(zipTree(originalJar)) {
         exclude blockedNativeArtifactPatterns
         exclude blockedExportArtifactPatterns
@@ -113,6 +180,7 @@ jar {
         exclude "META-INF/jars/forge-config-api-port-v21.1.3-1.21.1-Fabric.jar"
         exclude "META-INF/jars/forge-config-api-port-v21.11.1-mc1.21.11-fabric.jar"
         exclude "fabric.mod.json"
+        exclude "yes_steve_model.client.mixins.json"
         exclude "yes_steve_model.mixins.json"
         exclude "com/elfmcys/yesstevemodel/OO000oo00oo0O0O0oO0OoOoo.class"
         exclude "com/elfmcys/yesstevemodel/OO00O0OOoo00O00O00O0oooO.class"
@@ -136,7 +204,7 @@ jar {
 
     manifest {
         attributes(
-            "Implementation-Title": "YesSteveModel",
+            "Implementation-Title": "3DModelNow YSM Compatibility",
             "Implementation-Version": project.version,
             "Fabric-Minecraft-Version": project.minecraft_version,
             "Fabric-Loader-Version": project.loader_version,
@@ -171,9 +239,18 @@ tasks.register("verifyNoExportArtifacts") {
     }
 }
 
+tasks.register("remapYsmCompatJar", RemapJarTask) {
+    dependsOn ysmCompatJar
+    inputFile = tasks.named("ysmCompatJar").flatMap { it.archiveFile }
+    archiveBaseName = "3dmodelnow-ysm-compat"
+    archiveClassifier = ""
+    addNestedDependencies = false
+}
+
 tasks.named("build") {
     dependsOn tasks.named("verifyNoNativeArtifacts")
     dependsOn tasks.named("verifyNoExportArtifacts")
+    dependsOn remapYsmCompatJar
 }
 
 publishing {

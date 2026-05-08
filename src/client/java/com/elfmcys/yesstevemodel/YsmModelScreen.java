@@ -28,7 +28,7 @@ public final class YsmModelScreen extends Screen {
     private TextFieldWidget searchField;
 
     public YsmModelScreen() {
-        super(Text.literal("YSM Models"));
+        super(Text.literal("3DModelNow Models"));
     }
 
     @Override

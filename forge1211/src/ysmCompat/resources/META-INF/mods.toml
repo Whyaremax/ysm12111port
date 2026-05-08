@@ -1,0 +1,42 @@
+modLoader="javafml"
+loaderVersion="${forge_loader_range}"
+license="MIT"
+clientSideOnly=true
+
+[[mods]]
+modId="threed_model_now_ysm_compat"
+version="${version}"
+displayName="3DModelNow YSM Compatibility"
+displayURL="https://github.com/Whyaremax/3DModelNow"
+authors="3DModelNow contributors"
+credits="YS Group, TartaricAcid, TomatoPuddin, AryochiL, OpenYSM/YSMParser"
+description='''Optional 3DModelNow addon for YSM/OpenYSM pack import, selection, and display compatibility on Forge 1.21.11.'''
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.threed_model_now_ysm_compat]]
+modId="forge"
+mandatory=true
+versionRange="${forge_loader_range}"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.threed_model_now_ysm_compat]]
+modId="minecraft"
+mandatory=true
+versionRange="[${minecraft_version},${minecraft_version}]"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.threed_model_now_ysm_compat]]
+modId="threed_model_now"
+mandatory=true
+versionRange="[${version},)"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.threed_model_now_ysm_compat]]
+modId="geckolib"
+mandatory=true
+versionRange="[${geckolib_version},)"
+ordering="AFTER"
+side="CLIENT"

@@ -1,0 +1,247 @@
+plugins {
+    id "java"
+    id "net.minecraftforge.gradle" version "[7.0.3,8)"
+    id "maven-publish"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+sourceSets.main.java {
+    exclude "com/elfmcys/yesstevemodel/mixin/*.java"
+    exclude "com/elfmcys/yesstevemodel/mixin/client/InventoryScreenMixin.java"
+    exclude "com/elfmcys/yesstevemodel/mixin/client/ItemInHandRendererMixin.java"
+    exclude "com/elfmcys/yesstevemodel/mixin/client/LivingRendererMixin.java"
+    exclude "com/elfmcys/yesstevemodel/mixin/client/PlayerRendererMixin.java"
+    exclude "com/elfmcys/yesstevemodel/mixin/client/WorldRendererMixin.java"
+    exclude "com/elfmcys/yesstevemodel/YsmKeyBindingBuilder.java"
+    exclude "com/elfmcys/yesstevemodel/YsmOpenModelScreenKeyBinding.java"
+    exclude "com/elfmcys/yesstevemodel/o000O00OoOoO0o0ooO0O0O0O.java"
+    exclude "com/elfmcys/yesstevemodel/oo0OOOoO0O00o0OooO0Ooo00.java"
+}
+
+minecraft {
+    mappings channel: "official", version: project.minecraft_version
+
+    runs {
+        configureEach {
+            workingDir = layout.projectDirectory.dir("run")
+            systemProperty "forge.logging.markers", "REGISTRIES"
+            systemProperty "forge.logging.console.level", "debug"
+            mods {
+                threed_model_now {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            systemProperty "forge.enabledGameTestNamespaces", "threed_model_now"
+        }
+    }
+}
+
+def originalJar = file("../ysm-2.6.4-fabric+mc1.21.1-release.jar")
+def blockedNativeArtifactPatterns = [
+    "META-INF/native/**",
+    "**/*.dll",
+    "**/*.so",
+    "**/*.dylib",
+    "**/*.jnilib",
+    "**/*JNI*.class",
+    "**/*Jni*.class",
+    "**/*jni*.class",
+    "**/*Native*.class",
+    "**/*native*.class",
+    "**/libysm-core*",
+    "**/ysm-core*"
+]
+def blockedExportArtifactPatterns = [
+    "com/elfmcys/yesstevemodel/**/*Export*.class",
+    "com/elfmcys/yesstevemodel/**/*export*.class"
+]
+
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}")
+    compileOnly files("${projectDir}/.gradle/mavenizer/repo/net/minecraftforge/forge/${project.minecraft_version}-${project.forge_version}/forge-${project.minecraft_version}-${project.forge_version}.jar")
+    compileOnly "org.spongepowered:mixin:0.8.7"
+    compileOnly "com.google.code.gson:gson:2.13.2"
+    compileOnly "com.google.guava:guava:33.5.0-jre"
+    compileOnly "com.mojang:brigadier:1.3.10"
+    compileOnly "com.mojang:datafixerupper:9.0.19"
+    compileOnly "io.netty:netty-transport:4.2.7.Final"
+    compileOnly "org.apache.logging.log4j:log4j-api:2.25.2"
+    compileOnly "org.jetbrains:annotations:24.1.0"
+    compileOnly "org.joml:joml:1.10.8"
+    compileOnly "org.lwjgl:lwjgl-glfw:3.3.3"
+    compileOnly files(
+        "${gradle.gradleUserHomeDir}/caches/minecraftforge/forgegradle/mavenizer/caches/maven/forge/net/minecraftforge/eventbus/7.0.1/eventbus-7.0.1.jar",
+        "${gradle.gradleUserHomeDir}/caches/minecraftforge/forgegradle/mavenizer/caches/maven/forge/net/minecraftforge/fmlcore/${project.minecraft_version}-${project.forge_version}/fmlcore-${project.minecraft_version}-${project.forge_version}.jar",
+        "${gradle.gradleUserHomeDir}/caches/minecraftforge/forgegradle/mavenizer/caches/maven/forge/net/minecraftforge/fmlloader/${project.minecraft_version}-${project.forge_version}/fmlloader-${project.minecraft_version}-${project.forge_version}.jar",
+        "${gradle.gradleUserHomeDir}/caches/minecraftforge/forgegradle/mavenizer/caches/maven/forge/net/minecraftforge/javafmllanguage/${project.minecraft_version}-${project.forge_version}/javafmllanguage-${project.minecraft_version}-${project.forge_version}.jar",
+        "${gradle.gradleUserHomeDir}/caches/minecraftforge/forgegradle/mavenizer/caches/maven/forge/net/minecraftforge/mergetool-api/1.0/mergetool-api-1.0.jar"
+    )
+    compileOnly "software.bernie.geckolib:geckolib-forge-${project.minecraft_version}:${project.geckolib_version}"
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "forge_version", project.forge_version
+    inputs.property "forge_loader_range", project.forge_loader_range
+    inputs.property "geckolib_version", project.geckolib_version
+
+    filesMatching(["META-INF/mods.toml"]) {
+        expand(
+            version: project.version,
+            minecraft_version: project.minecraft_version,
+            forge_version: project.forge_version,
+            forge_loader_range: project.forge_loader_range
+        )
+    }
+    from("${projectDir}/../../..") {
+        include "*.py"
+        include "extractors/**"
+        into "python/ysm"
+    }
+    from("${projectDir}/../tools") {
+        into "tools"
+    }
+    exclude "fabric.mod.json"
+    exclude "yes_steve_model*.json"
+}
+
+tasks.register("processYsmCompatResources", Copy) {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "forge_version", project.forge_version
+    inputs.property "forge_loader_range", project.forge_loader_range
+    inputs.property "geckolib_version", project.geckolib_version
+
+    from("src/ysmCompat/resources") {
+        expand(
+            version: project.version,
+            minecraft_version: project.minecraft_version,
+            forge_version: project.forge_version,
+            forge_loader_range: project.forge_loader_range,
+            geckolib_version: project.geckolib_version
+        )
+    }
+    into layout.buildDirectory.dir("generated/ysmCompatResources")
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = 21
+    options.compilerArgs.add("-proc:none")
+}
+
+tasks.named("jar", Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveBaseName = "3dmodelnow-forge-1211"
+
+    exclude "com/elfmcys/**"
+    exclude "com/threedmodelnow/compat/ysm/**"
+    exclude "python/**"
+    exclude "tools/**"
+    exclude "yes_steve_model*.json"
+
+    manifest {
+        attributes(
+            "Implementation-Title": "3DModelNow Forge",
+            "Implementation-Version": project.version,
+            "MixinConfigs": "threed_model_now.forge.mixins.json"
+        )
+    }
+}
+
+tasks.register("ysmCompatJar", Jar) {
+    dependsOn classes, processYsmCompatResources
+    archiveBaseName = "3dmodelnow-ysm-compat-forge"
+    archiveClassifier = ""
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.output) {
+        include "com/elfmcys/**"
+        include "com/threedmodelnow/compat/ysm/**"
+        include "python/**"
+        include "tools/**"
+        include "yes_steve_model.mixins.json"
+        include "yes_steve_model.client.mixins.json"
+        exclude blockedNativeArtifactPatterns
+        exclude blockedExportArtifactPatterns
+    }
+    from(tasks.named("processYsmCompatResources"))
+    if (originalJar.exists()) {
+        from(zipTree(originalJar)) {
+            exclude blockedNativeArtifactPatterns
+            exclude blockedExportArtifactPatterns
+            exclude "META-INF/MANIFEST.MF"
+            exclude "META-INF/neoforge.mods.toml"
+            exclude "META-INF/jars/**"
+            exclude "fabric.mod.json"
+            exclude "yes_steve_model.client.mixins.json"
+            exclude "yes_steve_model.mixins.json"
+            exclude "com/elfmcys/yesstevemodel/mixin/**"
+        }
+    }
+
+    manifest {
+        attributes(
+            "Implementation-Title": "3DModelNow YSM Compatibility Forge",
+            "Implementation-Version": project.version,
+            "MixinConfigs": "yes_steve_model.forge.client.mixins.json"
+        )
+    }
+}
+
+tasks.register("verifyForgeBaseJar") {
+    dependsOn tasks.jar
+    doLast {
+        File outputJar = tasks.jar.archiveFile.get().asFile
+        Set<File> blockedFiles = zipTree(outputJar).matching {
+            include "com/elfmcys/**"
+            include "assets/yes_steve_model/**"
+            include "com/threedmodelnow/compat/ysm/**"
+            include blockedNativeArtifactPatterns
+        }.files
+        if (!blockedFiles.isEmpty()) {
+            throw new GradleException("Forge base jar contains addon-only or blocked artifacts: " + blockedFiles.collect { it.path }.join(", "))
+        }
+    }
+}
+
+tasks.register("verifyForgeYsmCompatJar") {
+    dependsOn tasks.named("ysmCompatJar")
+    doLast {
+        File outputJar = tasks.named("ysmCompatJar", Jar).get().archiveFile.get().asFile
+        Set<File> blockedFiles = zipTree(outputJar).matching {
+            include blockedNativeArtifactPatterns
+            include blockedExportArtifactPatterns
+            include "ysm-2.6.4-fabric+mc1.21.1-release.jar"
+            include "META-INF/jars/**"
+        }.files
+        if (!blockedFiles.isEmpty()) {
+            throw new GradleException("Forge YSM compat jar contains blocked artifacts: " + blockedFiles.collect { it.path }.join(", "))
+        }
+    }
+}
+
+tasks.named("build") {
+    dependsOn tasks.named("verifyForgeBaseJar")
+    dependsOn tasks.named("verifyForgeYsmCompatJar")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
